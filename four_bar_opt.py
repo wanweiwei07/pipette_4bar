@@ -17,9 +17,9 @@ Both cranks are fixed on the same flange:
 The motor turns theta from theta0 by motor_range (direction dirn = +-1) and back.
 
 Per-linkage variables [f, a, b, c, p, beta, sigma]
-    f     frame            20 ~ 60
+    f     frame            70 ~ 100
     a     crank            10 ~ 30
-    b     connecting rod   10 ~ 60
+    b     connecting rod   10 ~ 80
     c     rocker           10 ~ 50
     p     |O2P|            10 ~ 50
     beta  offset angle     -pi ~ pi
@@ -35,9 +35,9 @@ from scipy.optimize import differential_evolution
 # ---------------------------------------------------------------------------
 # problem setup
 # ---------------------------------------------------------------------------
-FB_BOUNDS = [(20., 60.),  # f frame
+FB_BOUNDS = [(70., 100.),  # f frame
              (10., 30.),  # a crank
-             (10., 60.),  # b connecting rod
+             (10., 80.),  # b connecting rod
              (10., 50.),  # c rocker
              (10., 50.),  # p distance O2->P
              (-np.pi, np.pi),  # beta
@@ -61,6 +61,8 @@ W_CRANK_DIR = 20.  # weight of crank pointing to -x penalty (cranks must stay at
 W_OFFSET = 5.  # weight of start offset error
 JOINT_X_RANGE = (-15., 20.)  # allowed x of the revolute joints (A, B; O1, O2 are on the y axis) during motion
 W_JOINT_X = 20.  # weight of joint x out-of-range penalty
+JOINT_Y_MARGIN = 0.  # moving joints (A, B) must stay at y <= O2_y - JOINT_Y_MARGIN during motion
+W_JOINT_Y = 20.  # weight of joint-above-O2 penalty
 
 
 def split(x):
@@ -134,8 +136,11 @@ def fb_cost(sol, ydir, stroke):
     # revolute joints stay within JOINT_X_RANGE
     jx = np.concatenate([sol['A'][:, 0], sol['B'][:, 0]])
     e_jx = np.max(np.maximum(JOINT_X_RANGE[0] - jx, 0) + np.maximum(jx - JOINT_X_RANGE[1], 0))
+    # no moving joint above the rocker pivot O2
+    jy = np.concatenate([sol['A'][:, 1], sol['B'][:, 1]])
+    e_jy = np.max(np.maximum(jy - (sol['O2'][1] - JOINT_Y_MARGIN), 0))
     return (e_x + W_MONO * e_mono + W_STROKE * e_stroke + W_MU * np.max(mu_dev) + W_CRANK_DIR * e_dir
-            + W_JOINT_X * e_jx)
+            + W_JOINT_X * e_jx + W_JOINT_Y * e_jy)
 
 
 def cost(x):
@@ -177,6 +182,8 @@ def report(x):
         print(f"  crank angle {crank_ang[0]:.1f} -> {crank_ang[-1]:.1f} deg (min x of A = {sol['A'][:, 0].min():.2f} mm)")
         print(f"  joint x: A in [{sol['A'][:, 0].min():.2f}, {sol['A'][:, 0].max():.2f}], "
               f"B in [{sol['B'][:, 0].min():.2f}, {sol['B'][:, 0].max():.2f}] mm (allowed {JOINT_X_RANGE})")
+        print(f"  highest joint y = {max(sol['A'][:, 1].max(), sol['B'][:, 1].max()):.2f} mm "
+              f"(O2 y = {sol['O2'][1]:.2f}, margin {JOINT_Y_MARGIN})")
     print("=" * 56)
 
 
@@ -236,11 +243,12 @@ def visualize(x):
 
     r_link = 1.2 * MM
     # target line x = X_LINE
-    ossop.cylinder(spos=p3((X_LINE, -20.)), epos=p3((X_LINE, 80.)), radius=.3 * MM,
+    y_lo, y_hi = pts[:, 1].min() / MM - 10., pts[:, 1].max() / MM + 10.
+    ossop.cylinder(spos=p3((X_LINE, y_lo)), epos=p3((X_LINE, y_hi)), radius=.3 * MM,
                    rgb=ouc.BasicColor.ORANGE).attach_to(base.scene)
     # allowed x band of the revolute joints
     for jx in JOINT_X_RANGE:
-        ossop.cylinder(spos=p3((jx, -20.)), epos=p3((jx, 80.)), radius=.2 * MM,
+        ossop.cylinder(spos=p3((jx, y_lo)), epos=p3((jx, y_hi)), radius=.2 * MM,
                        rgb=ouc.ExtendedColor.SILVER_GRAY).attach_to(base.scene)
 
     def make_link(length, rgb, radius=r_link):

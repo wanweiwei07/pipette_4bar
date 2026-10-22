@@ -32,6 +32,7 @@ Units are mm in the optimization and m in the viewer.
 | Backward motor stroke | reversed: fb1 lifts, fb2 moves -y | (automatic) |
 | Both cranks point to +x | crank tip x ≥ 0 over the stroke | `W_CRANK_DIR` |
 | Revolute joints A, B stay in band | −15 ≤ x ≤ 20 mm | `JOINT_X_RANGE` |
+| No moving joint above the rocker pivot | y_A, y_B ≤ y_O2 (− margin) | `JOINT_Y_MARGIN` (= 0) |
 | Transmission angle | 40° ≤ μ ≤ 140° | `MU_MIN` |
 
 ## 3. Design variables
@@ -40,9 +41,9 @@ Per linkage (×2): `[f, a, b, c, p, β, σ]`
 
 | Variable | Meaning | Range |
 |---|---|---|
-| f | frame O1-O2 | 20 – 60 mm |
+| f | frame O1-O2 | 70 – 100 mm |
 | a | crank O1-A | 10 – 30 mm |
-| b | connecting rod A-B | 10 – 60 mm |
+| b | connecting rod A-B | 10 – 80 mm |
 | c | rocker O2-B | 10 – 50 mm |
 | p | O2-P distance | 10 – 50 mm |
 | β | angle from O2B to O2P | −180° – 180° |
@@ -53,25 +54,26 @@ Shared: motor start angle θ₀, crank offset δ, motor direction (CW/CCW), moto
 ## 4. Method
 
 - **Kinematics**: for each motor angle, B is the intersection of circle(A, b) and circle(O2, c) on branch σ; P is obtained by rotating O2B by β and scaling to p. A configuration that cannot be assembled is rejected.
-- **Cost** (summed over fb1 and fb2): straightness max|x_P + 30| + penalties for non-monotonic motion, stroke shortage, start-offset error, transmission angle, crank direction, and joint x range.
+- **Cost** (summed over fb1 and fb2): straightness max|x_P + 30| + penalties for non-monotonic motion, stroke shortage, start-offset error, transmission angle, crank direction, joint x range, and joints above O2.
 - **Solver**: `scipy.optimize.differential_evolution` (Sobol init, parallel workers). One run takes about 10 s.
 
 ## 5. Result (seed = 0)
 
 | | f | a | b | c | p | β | σ |
 |---|---|---|---|---|---|---|---|
-| fb1 | 33.34 | 21.48 | 53.16 | 17.21 | 31.30 | 168.0° | −1 |
-| fb2 | 33.34 | 13.67 | 32.52 | 12.92 | 31.30 | −42.8° | +1 |
+| fb1 | 77.09 | 15.67 | 72.95 | 15.15 | 31.30 | −32.4° | +1 |
+| fb2 | 77.09 | 16.69 | 73.62 | 17.54 | 31.30 | −156.3° | −1 |
 
-Motor: starts at −83.0°, turns 56.6° CCW; fb2 crank offset δ = 57.4°.
+Motor: starts at 29.3°, turns 46.1° CW; fb2 crank offset δ = −17.4°.
 
 | Item | fb1 | fb2 |
 |---|---|---|
-| End point travel | 45.84 → 20.84 (−25.00 mm) | 20.84 → 45.84 (+25.00 mm) |
+| End point travel | 89.59 → 64.59 (−25.00 mm) | 64.59 → 89.59 (+25.00 mm) |
 | Max \|x − (−30)\| | 1.30 mm | 1.30 mm |
-| Transmission angle | 60.1° – 86.0° | 61.9° – 123.8° |
-| Joint A x | 2.60 – 19.23 mm | 11.72 – 13.67 mm |
-| Joint B x | 14.01 – 17.21 mm | −12.20 – −5.18 mm |
+| Transmission angle | 75.7° – 127.1° | 89.2° – 138.7° |
+| Joint A x | 13.66 – 15.67 mm | 13.81 – 16.69 mm |
+| Joint B x | −14.97 – −8.50 mm | 11.91 – 17.54 mm |
+| Highest joint y (O2 at 77.09) | 74.77 mm | 77.05 mm |
 
 ![poses](docs/images/poses.png)
 
@@ -81,6 +83,7 @@ Motor: starts at −83.0°, turns 56.6° CCW; fb2 crank offset δ = 57.4°.
 
 - **Straightness limit.** P is on the rocker, so it always moves on an arc centered at O2. The best an arc can do against a straight segment of length s is a deviation of about s² / (16 p): 0.47 mm for 15 mm, **1.30 mm for 25 mm**, about 1.9 mm (estimated) for 30 mm. The other variables cannot reduce this; to get a straighter path, P would have to be on the connecting rod.
 - **Shared pivot.** Since both end points must cover the same segment on the same line, the optimum gives f₁ = f₂ and p₁ = p₂: the two rockers share pivot O2 and both end points travel the same arc. They must be in different planes (z layers) to avoid collision; the viewer draws fb2 6 mm behind fb1.
+- **No clearance margin yet.** `JOINT_Y_MARGIN` is 0, and the optimizer uses all the room it is given: fb2's joint B comes within 0.04 mm of O2's height, and fb1's joint B reaches x = −14.97. Set `JOINT_Y_MARGIN` (and narrow `JOINT_X_RANGE`) to reserve space for real joint hardware.
 - **Multiple optima.** Different seeds give different link lengths with the same cost. Add a secondary objective (smaller motor stroke, larger transmission angle, compactness, …) if a unique design is needed.
 
 ## 7. Usage
