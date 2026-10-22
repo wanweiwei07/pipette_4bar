@@ -2,7 +2,7 @@
 
 **English** | [中文](README_zh.md) | [日本語](README_ja.md)
 
-Dimensional synthesis of a **dual four-bar linkage** driven by a single motor. The two linkages (fb1, fb2) share one motor flange; their end points move alternately along a vertical line at x = -30 mm: when one moves down, the other lifts. The script optimizes all link lengths and the motor stroke, then animates the result with the [`one`](https://github.com/wanweiwei07/wrs2) viewer.
+Dimensional synthesis of a **dual four-bar linkage** driven by a single motor. The two linkages (fb1, fb2) share one motor flange; their end points move alternately along a vertical line at x = -30 mm: when one moves down, the other lifts. The script optimizes all link lengths and the motor stroke, then animates the result with the [`one`](https://github.com/wanweiwei07/one) viewer.
 
 ![motion](docs/images/motion.gif)
 
@@ -88,7 +88,7 @@ Motor: starts at 29.3°, turns 46.1° CW; fb2 crank offset δ = −17.4°.
 
 ## 7. Usage
 
-Requirements: Python ≥ 3.12, `numpy`, `scipy`, and [`one`](https://github.com/wanweiwei07/wrs2) (plus `pyglet` and `imgui-bundle` for the viewer).
+Requirements: Python ≥ 3.12, `numpy`, `scipy`, and [`one`](https://github.com/wanweiwei07/one) (plus `pyglet` and `imgui-bundle` for the viewer).
 
 ```bash
 # Windows example; make `one` importable

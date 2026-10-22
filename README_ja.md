@@ -2,7 +2,7 @@
 
 [English](README.md) | [中文](README_zh.md) | **日本語**
 
-1 台のモータで駆動する**二重四節リンク機構**の寸法設計です。2 つのリンク（fb1、fb2）は同じモータフランジを共有し、先端は x = -30 mm の鉛直線に沿って交互に動きます。一方が下がるとき、もう一方は上がります。プログラムはすべてのリンク長とモータ回転角を最適化し、結果を [`one`](https://github.com/wanweiwei07/wrs2) ライブラリでアニメーション表示します。
+1 台のモータで駆動する**二重四節リンク機構**の寸法設計です。2 つのリンク（fb1、fb2）は同じモータフランジを共有し、先端は x = -30 mm の鉛直線に沿って交互に動きます。一方が下がるとき、もう一方は上がります。プログラムはすべてのリンク長とモータ回転角を最適化し、結果を [`one`](https://github.com/wanweiwei07/one) ライブラリでアニメーション表示します。
 
 ![motion](docs/images/motion.gif)
 
@@ -88,7 +88,7 @@
 
 ## 7. 使い方
 
-必要環境：Python ≥ 3.12、`numpy`、`scipy`、[`one`](https://github.com/wanweiwei07/wrs2)（表示には `pyglet` と `imgui-bundle` も必要）。
+必要環境：Python ≥ 3.12、`numpy`、`scipy`、[`one`](https://github.com/wanweiwei07/one)（表示には `pyglet` と `imgui-bundle` も必要）。
 
 ```bash
 # Windows の例；`one` をインポート可能にする

@@ -2,7 +2,7 @@
 
 [English](README.md) | **中文** | [日本語](README_ja.md)
 
-单电机驱动的**双四杆机构**尺寸综合。两套四杆（fb1、fb2）共用同一个电机法兰，末端交替沿 x = -30 mm 的竖直线运动：一个向下时，另一个抬起。程序优化全部杆长和电机转角，并用 [`one`](https://github.com/wanweiwei07/wrs2) 库动画显示结果。
+单电机驱动的**双四杆机构**尺寸综合。两套四杆（fb1、fb2）共用同一个电机法兰，末端交替沿 x = -30 mm 的竖直线运动：一个向下时，另一个抬起。程序优化全部杆长和电机转角，并用 [`one`](https://github.com/wanweiwei07/one) 库动画显示结果。
 
 ![motion](docs/images/motion.gif)
 
@@ -88,7 +88,7 @@
 
 ## 7. 使用方法
 
-依赖：Python ≥ 3.12、`numpy`、`scipy`、[`one`](https://github.com/wanweiwei07/wrs2)（显示还需要 `pyglet` 和 `imgui-bundle`）。
+依赖：Python ≥ 3.12、`numpy`、`scipy`、[`one`](https://github.com/wanweiwei07/one)（显示还需要 `pyglet` 和 `imgui-bundle`）。
 
 ```bash
 # Windows 示例；让 `one` 可被导入
